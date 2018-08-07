@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Canvas.html</title>
+	
+    <meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+    <meta http-equiv="description" content="this is my page">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    
+    <!--<link rel="stylesheet" type="text/css" href="./styles.css">-->
+    <script type="text/javascript" src="src/d3.layout.cloud.js"></script>
+	<style type="text/css">
+		canvas{
+			/* background: blue; */
+			 border: 1px solid black; 
+		}
+	</style>
+  </head>
+  
+  <body>
+  	<div align="center">
+  		<input type="button" id="draw" value="draw"/>
+  		颜色：<input type="color" id="color" value="black"/>&nbsp;
+  		粗细：<input type="range" id="range" min="1" max="20" value="3"><span id="r">3</span>
+  		<input type="button" id="eraser" value="eraser"/>&nbsp;
+  		<input type="button" id="reset" value="reset"/><br/>
+  		<canvas id="canvas" width="800" height="550"></canvas>
+  		<br/><span>注意：橡皮擦的大小也可以通过粗细来调节</span>
+  	</div>
+ 
+  	<script type="text/javascript" src="../src/mywc.js"></script>
+  	<script type="text/javascript">
+  		var canvas = document.getElementById("canvas");
+  		canvas.style.background="white";
+  		var cv = canvas.getContext('2d');
+  		canvas.onmousedown = function(e){
+  			var ev = window.event || e;
+  			var mx = ev.layerX || ev.offsetX;
+  			var my = ev.layerY || ev.offsetY;
+  			cv.beginPath();
+  			cv.moveTo(mx,my);
+  			canvas.onmousemove = function(e){
+  				var ev = window.event || e;
+  				var mnx = ev.layerX || ev.offsetX;
+  				var mny = ev.layerY || ev.offsetY;
+  				cv.lineTo(mnx,mny);
+  				cv.stroke();
+  			}	
+  		}
+  		canvas.onmouseup = function(e){
+  			canvas.onmousemove = null;
+  			cv.closePath();
+  			//cv.stroke();
+  		}
+  		document.getElementById("color").onchange = function(){
+  			cv.strokeStyle=this.value;
+  		}
+  		document.getElementById("range").onchange = function(){
+  			cv.lineWidth=this.value;
+  			document.getElementById("r").innerHTML = this.value;
+  		}
+  		document.getElementById("draw").onclick = function(){
+  			cv.strokeStyle=document.getElementById("color").value;
+  			cv.lineWidth=document.getElementById("range").value;
+  		}
+  		document.getElementById("reset").onclick = function(){
+  			cv.clearRect(0,0,canvas.width,canvas.height);
+  		}
+  		document.getElementById("eraser").onclick = function(){
+  			cv.strokeStyle=canvas.style.background;
+  			//cv.lineWidth=25;
+  		} 
+  	</script>
+  </body>
+</html>

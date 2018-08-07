@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>myWordle</title>
+	
+    <meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+    <meta http-equiv="description" content="this is my page">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    
+    <!--<link rel="stylesheet" type="text/css" href="./styles.css">-->
+	<style type="text/css">
+		canvas{
+			/* background: blue; */
+			 border: 1px solid black; 
+		}
+		#coordinate{
+			color:red;
+		}
+		h2{
+			//color:red;
+		}
+	</style>
+  </head>
+  
+  <body>
+    <div id="cv_div" align="center">
+    	<h2>Word Cloud</h2>
+  		<canvas id="canvas" width="800" height="550"></canvas><br/>
+  		<input type="button" id="showBox" value="Show Box"/>&nbsp;
+  		<input type="button" id="Word_level" value="Word-level Box"/>&nbsp;
+  		<input type="button" id="Letter_level" value="Letter-level Box"/>&nbsp;
+  		<input type="button" id="reset" value="ReLayout"/>&nbsp;
+  		<input type="button" id="Cforces" value="Center Forces"/>&nbsp;
+  		<input type="button" id="rigid" value="Rigid Body"/>&nbsp;
+  		<input type="button" id="compact" value="Compact"/>&nbsp;
+<!--   		<input type="button" id="preserve" value="Preserve"/>&nbsp; -->
+  		<input type="button" id="test" value="test"/>&nbsp;<br/>
+  		Mouse coordinate:<span id="coordinate">0:0</span>
+  	</div>
+  	<script type="text/javascript" src="../src/mywc.js"></script>
+  	<script type="text/javascript">
+  		//window.onload = originalWordle;
+  		window.onload = rigidWordle;
+		document.getElementById("reset").onclick = originalWordle;
+		document.getElementById("Cforces").onclick = centerWordle;
+		document.getElementById("rigid").onclick = rigidWordle;
+		//document.getElementById("showBox").onclick = showBox;
+		document.getElementById("showBox").onclick = function(){
+			showBox("red");
+		};
+		document.getElementById("Word_level").onclick = function(){
+			Word_levelBox("black");
+		};
+		document.getElementById("Letter_level").onclick = function(){
+			Letter_levelBox("red");
+		};
+		document.getElementById("compact").onclick = compact;
+		//document.getElementById("preserve").onclick = preserve;
+		document.getElementById("test").onclick = test;
+		
+  	</script>
+  </body>
+</html>
