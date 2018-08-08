@@ -5,12 +5,68 @@
   			var mx = ev.layerX || ev.offsetX;
   			var my = ev.layerY || ev.offsetY;
   			document.getElementById("coordinate").innerHTML=mx+":"+my;
+  			var i=0;
+  			outerloop:
+  			for(; i<len;i++){
+  				var wordlen = wordlistTwoBox[i].word.length;
+  				//alert(i+":"+wordlen)
+  				if(wordlistTwoBox[i].word.search(' ')>=0){ //不存在为-1
+  					wordlen--;
+  				}
+  				//alert(i+":"+wordlen);
+  				for(var j=0;j<wordlen;j++){
+  					//alert(i+": "+j)
+  					var letter=wordlistTwoBox[i].box[j];
+  					var x1=letter.border[0];
+  					var x2=x1+letter.border[2];//x2=x1+wordw;
+  					var y1=letter.border[1];
+  					var y2=y1+letter.border[3];//y2=y1+wordh;
+  					if(mx>=x1&&mx<=x2&&my>=y1&&my<=y2){
+  						document.getElementById("word").innerHTML=list[i][0]+" : "+list[i][1];
+  						showWord(i);
+  						var mnx=wordlist[i].border[0]-1;
+  						var mny=wordlist[i].border[1]-1;
+  						var wordw=wordlist[i].border[2]+2;
+  						var wordh=wordlist[i].border[3]+2;
+  						
+  						var dx=mx-mnx;
+  						var dy=my-mny;
+  						
+  						var imageData = cxt.getImageData(mnx,mny,wordw,wordh);
+  						mnx=mx;
+  						mny=my;
+  						//cxt.clearRect(mnx,mny,wordw,wordh);
+  						cv.onmousemove = function(e){
+  							cxt.clearRect(mnx-dx,mny-dy,wordw,wordh);
+  			  				var ev = window.event || e;
+  			  				mnx = ev.layerX || ev.offsetX;
+  			  				mny = ev.layerY || ev.offsetY;
+  			  				document.getElementById("coordinate").innerHTML=mnx+":"+mny;
+  			  				
+  			  				//var imageData = wordlist
+  			  				cxt.putImageData(imageData,mnx-dx,mny-dy);
+  			  				
+  			  			}
+  						
+  						//cxt.putImageData(imageData,mnx,mny);
+  						break outerloop;
+  					}
+  				}
+  			}
+  			
+  			if(i>=len){
+  				//alert(i+": if")
+  				cxt.putImageData(imgData,0,0);
+  				document.getElementById("word").innerHTML="";
+  			}
+  			/*
   			cv.onmousemove = function(e){
   				var ev = window.event || e;
   				var mnx = ev.layerX || ev.offsetX;
   				var mny = ev.layerY || ev.offsetY;
   				document.getElementById("coordinate").innerHTML=mnx+":"+mny;
   			}
+  			*/
   	}
 	cv.onmouseup = function(e){
 			cv.onmousemove = null;
@@ -18,9 +74,9 @@
 		var cxt = cv.getContext('2d');
 		//cxt.save();
 		var back_font = "px Arial";
-		var list=[["Layout",346],["Xiong",105],["Kai",95],["Cloud",153],["Word",148], ["China", 246],["CAD", 180],["August", 85],["Knowledge",100],["key",69],["EdWordle",500],["Rigid Body",177],["method",102]];
+		//var list=[["Layout",346],["Xiong",105],["Kai",95],["Cloud",153],["Word",148], ["China", 246],["CAD", 180],["August", 85],["Knowledge",100],["key",69],["EdWordle",500],["Rigid Body",177],["method",102]];
 		
-		//var list=[["Layout",846],["group",543],["Give up",336],["Pigs",999]];
+		var list=[["Layout",846],["group",543],["Give up",336],["Pigs",999]];
 		//var list=[["Layout",846]];
 		//var list=[["A",846]];
 		//alert(list.length)
@@ -54,6 +110,7 @@
     var switch_Letter=true;
     var switch_Word=true;
 	var wordlist = [];
+	var wordlistTwoBox = [];//所有单词的字母边界
 	var imgData; //记录每次布局
 	
     function originalWordle(){
@@ -343,14 +400,22 @@
 			});
 		}
 		getTowLevelBorder();
+		/*
 		var first=list.shift();
     	shuffle(list);
     	list.unshift(first);
-    	imgData=cxt.getImageData(0,0,cw,ch);
+    	*/
+		imgData=cxt.getImageData(0,0,cw,ch);
     }
     
     function compact(){
     	
+    }
+    
+    function showWord(i){
+    	cxt.putImageData(imgData,0,0);
+    	cxt.strokeStyle="red";
+    	cxt.strokeRect(wordlist[i].border[0],wordlist[i].border[1],wordlist[i].border[2],wordlist[i].border[3]);
     }
     
     function showBox(color){
@@ -381,7 +446,6 @@
     	},3000);
     	*/
     }
-    var wordlistTwoBox = [];//所有单词的字母边界
     
     function showTwoBox(color1,color2){
     	if(switch_TwoBox){
@@ -706,7 +770,13 @@
 	
     function test(){
     	setTimeout(function (){
-    		alert("Never give up!");
-    	},1000)
+    		var ww="hello world";
+    		//if(' ' in ww){
+    		if(ww.search(' ')>0){
+    			alert(ww.search(' ')+"yes");
+    		}else{
+    			alert(ww.search(' ')+"no")
+    		}
+    	},0)
     }
     
