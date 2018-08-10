@@ -18,6 +18,7 @@
 		}
 		#table{
 			width:800px;
+			padding-top: 5px;
 		}
 	</style>
   </head>
@@ -36,10 +37,20 @@
 <!--   		<input type="button" id="preserve" value="Preserve"/>&nbsp; -->
   		<input type="button" id="test" value="test"/>&nbsp;<br/>
   		<div id="table" align="center">
-  		<table width="68%" align="center">
-  			<tr align="left">
-  				<td>Mouse coordinate:<span id="coordinate">0:0</span></td>
-  				<td><span id="word"></span></td>
+  		<table width="70%" align="center">
+  			<tr>
+  				<td align="left">Mouse coordinate:<span id="coordinate">0:0</span></td>
+  				<td align="right">
+  					<span id="word"></span>&nbsp;&nbsp;
+  					<div id="font" style="display:none">
+  						color:&nbsp;<input type="color" id="color" />&nbsp; 
+  						font:&nbsp;<select id="font_type">
+  								   		<option var="Arial">Arial</option>
+  								   		<option var="Georgia">Georgia</option>
+  								   		<option var="Teen">Teen</option>
+  								   </select>
+  					</div>
+  				</td>
   			</tr>
   		</table>
   		</div>

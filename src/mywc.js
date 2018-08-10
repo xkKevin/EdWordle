@@ -1,10 +1,91 @@
 
 	var cv = document.getElementById("canvas");
+	var movex=0;
+	var movey=0;
+	var selectWords=[];
 	cv.onmousedown = function(e){
   			var ev = window.event || e;
   			var mx = ev.layerX || ev.offsetX;
   			var my = ev.layerY || ev.offsetY;
   			document.getElementById("coordinate").innerHTML=mx+":"+my;
+  			if(selectWords.length){
+  				for(var i in selectWords){
+  					var x1=wordlist[selectWords[i]].border[0];
+  					var y1=wordlist[selectWords[i]].border[1];
+  					var x2=x1+wordlist[selectWords[i]].border[2];
+  					var y2=y1+wordlist[selectWords[i]].border[3];
+  					if(mx>=x1&&mx<=x2&&my>=y1&&my<=y2){ //词组的移动
+  						var selectwl=[];
+  						
+  						for(var j in selectWords){
+  							var xl=wordlist[selectWords[j]].border[0]-1;
+  	  						var yt=wordlist[selectWords[j]].border[1]-1;
+  	  						var wordw=wordlist[selectWords[j]].border[2]+2;
+  	  						var wordh=wordlist[selectWords[j]].border[3]+2;
+  	  						
+  	  						//var dx=mx-xl;
+  	  						//var dy=my-yt;
+  	  						
+  	  						selectwl.push({
+  	  							i:selectWords[j],
+  	  							dx:mx-xl,
+  	  							dy:my-yt,
+  	  							wordw:wordw,
+  	  							wordh:wordh,
+  	  							imageData:cxt.getImageData(xl,yt,wordw,wordh)
+  	  						})
+  	  						cxt.clearRect(xl,yt,wordw,wordh);
+  						}
+  						var imageDataOtherWords = cxt.getImageData(0,0,cw,ch);
+  						for(var j=0;j< selectwl.length;j++){
+			  				cxt.putImageData(selectwl[j].imageData,mx-selectwl[j].dx,my-selectwl[j].dy);
+			  			}
+  						var mnx,mny;
+  						cv.onmousemove = function(e){
+  							cxt.putImageData(imageDataOtherWords,0,0);
+  			  				var ev = window.event || e;
+  			  				mnx = ev.layerX || ev.offsetX;
+  			  				mny = ev.layerY || ev.offsetY;
+  			  				document.getElementById("coordinate").innerHTML=mnx+":"+mny;
+  			  				for(var j=0;j< selectwl.length;j++){
+  			  					cxt.putImageData(selectwl[j].imageData,mnx-selectwl[j].dx,mny-selectwl[j].dy);
+  			  				}
+  			  				
+  	  						movex=mnx-mx;
+  	  						movey=mny-my;
+  			  			}
+  						cv.onmouseup = function(e){
+  							cv.onmousemove = null;
+  							
+  							if(movex||movey){ //表明移动了鼠标
+  								for(var j in selectwl){
+	  								wordlist[selectwl[j].i].border[0]+=movex;
+	  								wordlist[selectwl[j].i].border[1]+=movey;
+	  								cxt.clearRect(mnx-selectwl[j].dx,mny-selectwl[j].dy,selectwl[j].wordw,selectwl[j].wordh);
+	  								cxt.putImageData(wordlist[selectwl[j].i].border[4],mnx-selectwl[j].dx+1,mny-selectwl[j].dy+1);
+	  								//alert(movex+":"+movey);
+	  								//imgData=getImageData(0,0,cw,ch);
+	  								wordlistTwoBox[selectwl[j].i].minX+=movex;
+	  								wordlistTwoBox[selectwl[j].i].minY+=movey;
+	  								for(var lb in wordlistTwoBox[selectwl[j].i].box){ //letterborder
+	  									wordlistTwoBox[selectwl[j].i].box[lb].border[0]+=movex;
+	  									wordlistTwoBox[selectwl[j].i].box[lb].border[1]+=movey;
+	  								}
+  								}
+  								imgData=cxt.getImageData(0,0,cw,ch);
+  								for(var j in selectwl){
+  									showSelectWords(selectwl[j].i);
+  								}
+  								//getTowLevelBorder();
+  								movex=0;
+  								movey=0;
+  							}
+  						}
+  						return;
+  					}//-if
+  				}//-for
+  			}
+  			selectWords.length=0; //说明没有选中词组
   			var i=0;
   			outerloop:
   			for(; i<len;i++){
@@ -23,54 +104,143 @@
   					var y2=y1+letter.border[3];//y2=y1+wordh;
   					if(mx>=x1&&mx<=x2&&my>=y1&&my<=y2){
   						document.getElementById("word").innerHTML=list[i][0]+" : "+list[i][1];
+  						document.getElementById("font").style.display="inline"; //inline内联元素，不会换行；block块级标签，换行
+  						document.getElementById("color").value=wordlist[i].color;
   						showWord(i);
-  						var mnx=wordlist[i].border[0]-1;
-  						var mny=wordlist[i].border[1]-1;
-  						var wordw=wordlist[i].border[2]+2;
-  						var wordh=wordlist[i].border[3]+2;
+  						document.getElementById("color").onchange = function(){
+  				  			alert(this.value);
+  				  		}
+  						/*
+  						var wordl=wordlistTwoBox[i].box;
   						
-  						var dx=mx-mnx;
-  						var dy=my-mny;
-  						
-  						var imageData = cxt.getImageData(mnx,mny,wordw,wordh);
-  						mnx=mx;
-  						mny=my;
-  						//cxt.clearRect(mnx,mny,wordw,wordh);
+  						for(var k in wordl){
+  							var xl=wordl[k].border[0]; //x_left
+  	  						var yt=wordl[k].border[1]; //x_top
+  	  						var letterw=wordl[k].border[2];
+  	  						var letterh=wordl[k].border[3];
+  	  						var dx=mx-xl;
+  	  						var dy=my-yt;
+  	  						var mnx,mny;
+  	  						cxt.clearRect(xl,yt,letterw,letterh);
+  						}
+  						*/
+  						//alert(wordlistTwoBox[i].word);
+  						var xl=wordlist[i].border[0]-1; //x_left
+	  					var yt=wordlist[i].border[1]-1; //x_top
+	  					var dx=mx-xl;
+	  					var dy=my-yt;
+	  					var wordw=wordlist[i].border[2]+2;
+	  					var wordh=wordlist[i].border[3]+2;
+	  					var selectWord = cxt.getImageData(xl,yt,wordw,wordh);
+	  					cxt.clearRect(xl,yt,wordw,wordh);
+	  					
+	  					
+  						var imageDataOtherWords = cxt.getImageData(0,0,cw,ch);
+  						cxt.putImageData(selectWord,xl,yt);
+  						//showWord(i);
   						cv.onmousemove = function(e){
-  							cxt.clearRect(mnx-dx,mny-dy,wordw,wordh);
+  							//cxt.clearRect(mnx-dx,mny-dy,wordw,wordh);
+  							cxt.putImageData(imageDataOtherWords,0,0);
   			  				var ev = window.event || e;
   			  				mnx = ev.layerX || ev.offsetX;
   			  				mny = ev.layerY || ev.offsetY;
   			  				document.getElementById("coordinate").innerHTML=mnx+":"+mny;
-  			  				
-  			  				//var imageData = wordlist
-  			  				cxt.putImageData(imageData,mnx-dx,mny-dy);
+  			  				//cxt.globalCompositeOperation="lighter";//重叠图形颜色叠加
+  			  				cxt.putImageData(selectWord,mnx-dx,mny-dy);
+
+  	  						movex=mnx-mx;
+  	  						movey=mny-my;
   			  				
   			  			}
-  						
+  			  			
   						//cxt.putImageData(imageData,mnx,mny);
+  						cv.onmouseup = function(e){
+  							//alert(movex+":"+movey);
+  							cv.onmousemove = null;
+  							
+  							if(movex||movey){
+  								
+  								wordlist[i].border[0]+=movex;
+  								wordlist[i].border[1]+=movey;
+  								cxt.clearRect(mnx-dx,mny-dy,wordw,wordh);
+  								cxt.putImageData(wordlist[i].border[4],mnx-dx+1,mny-dy+1);
+  								//alert(movex+":"+movey);
+  								//imgData=getImageData(0,0,cw,ch);
+  								wordlistTwoBox[i].minX+=movex;
+  								wordlistTwoBox[i].minY+=movey;
+  								for(var lb in wordlistTwoBox[i].box){ //letterborder
+  									wordlistTwoBox[i].box[lb].border[0]+=movex;
+  									wordlistTwoBox[i].box[lb].border[1]+=movey;
+  								}
+  								imgData=cxt.getImageData(0,0,cw,ch);
+  								showWord(i);
+  								//getTowLevelBorder();
+  								movex=0;
+  								movey=0;
+  							}
+  							
+  							
+  						}
   						break outerloop;
-  					}
-  				}
+  					}//-if
+  				}//-for
   			}
   			
-  			if(i>=len){
-  				//alert(i+": if")
+  			if(i>=len){ //表示鼠标不在单词上
   				cxt.putImageData(imgData,0,0);
   				document.getElementById("word").innerHTML="";
-  			}
-  			/*
-  			cv.onmousemove = function(e){
-  				var ev = window.event || e;
-  				var mnx = ev.layerX || ev.offsetX;
-  				var mny = ev.layerY || ev.offsetY;
-  				document.getElementById("coordinate").innerHTML=mnx+":"+mny;
-  			}
-  			*/
-  	}
+  				document.getElementById("font").style.display="none";
+  				
+  				var mnx;
+  				var mny;
+  				//selectWords.length=0;
+  				cv.onmousemove = function(e){
+  					cxt.putImageData(imgData,0,0);
+  					//cxt.clearRect(mx-1,my-1,mnx-mx+2,mny-my+2);
+  	  				var ev = window.event || e;
+  	  				mnx = ev.layerX || ev.offsetX;
+  	  				mny = ev.layerY || ev.offsetY;
+  	  				document.getElementById("coordinate").innerHTML=mnx+":"+mny;
+  	  				/*
+  	  				cxt.strokeStyle="green";
+  	  				cxt.strokeRect(mx,my,mnx-mx,mny-my);
+  	  				*/
+  	  				cxt.fillStyle="rgba(0,0,255,0.1)";
+  	  				cxt.fillRect(mx,my,mnx-mx,mny-my);
+  	  				for(var i=0;i<len;i++){ //选中词组
+  	  					var x1=wordlist[i].border[0];
+  	  					var y1=wordlist[i].border[1];
+  	  					var x2=x1+wordlist[i].border[2];
+  	  					var y2=y1+wordlist[i].border[3];
+  	  					if(mx<=x1&&my<=y1&&x2<=mnx&&y2<=mny){
+  	  						showSelectWords(i);
+  	  						if(selectWords.indexOf(i)==-1){//不能用in，in是用来判断属性的
+  	  							//alert(mnx+":"+mny);
+  	  							//console.log(i)
+  	  	  						selectWords.push(i);
+  	  						}
+  	  					}
+  	  				}
+  	  				
+  	  			}//-cv.onmousemove
+  				cv.onmouseup = function(e){
+  					cv.onmousemove = null;
+  					cxt.putImageData(imgData,0,0);
+  					if(selectWords.length){
+  						for(var i in selectWords){
+  							showSelectWords(selectWords[i]);
+  						}
+  					}
+  				}
+  			}//-if					
+  	}//-cv.onmousedown
+	/*
 	cv.onmouseup = function(e){
-			cv.onmousemove = null;
+		//alert(movex+":"+movey);
+		cv.onmousemove = null;
 	}
+	*/
+	
 		var cxt = cv.getContext('2d');
 		//cxt.save();
 		var back_font = "px Arial";
@@ -78,7 +248,7 @@
 		
 		var list=[["Layout",846],["group",543],["Give up",336],["Pigs",999]];
 		//var list=[["Layout",846]];
-		//var list=[["A",846]];
+		//var list=[["A",846],["i",462]];
 		//alert(list.length)
 		//alert(list[0][1]+":"+list[1][1]+":"+list[2][1]+":"+list[3][1]);
 		list.sort(function(x,y){
@@ -418,7 +588,14 @@
     	cxt.strokeRect(wordlist[i].border[0],wordlist[i].border[1],wordlist[i].border[2],wordlist[i].border[3]);
     }
     
+    function showSelectWords(i){
+    	//cxt.putImageData(imgData,0,0);
+    	cxt.strokeStyle="red";
+    	cxt.strokeRect(wordlist[i].border[0],wordlist[i].border[1],wordlist[i].border[2],wordlist[i].border[3]);
+    }
+    
     function showBox(color){
+    	cxt.putImageData(imgData,0,0);
     	if(switch_box){
     		//imgData=cxt.getImageData(0,0,cw,ch);
         	cxt.strokeStyle=color;
@@ -428,7 +605,7 @@
         	switch_box=false;
     	}else{
     		//cxt.clearRect(0,0,cw,ch);
-    		cxt.putImageData(imgData,0,0);
+    		//cxt.putImageData(imgData,0,0);
     		switch_box=true; 
     	}
     	
@@ -529,7 +706,7 @@
         	//alert(border+":size:"+wordlist[0].size);
         	var word=wordlist[i].word;
         	//alert(word.length+":"+word[0]);
-        	//var size=33;
+        	//var size=wordlist[i].size;
         	cxt.font = wordlist[i].size.toString()+back_font;
         	var x=border[0];
         	var y=border[1];
@@ -547,6 +724,7 @@
         		if(word[j]==' '){
         			continue;
         		}
+        		word
         		var wordw=Math.floor(cxt.measureText(word[j]).width); //注意，像素一定要是整数，要不然会出错
         		//var wordh=border[3];
         		/*
@@ -770,6 +948,18 @@
 	
     function test(){
     	setTimeout(function (){
+    		var ww=[];
+    		for(var i=0;i<3;i++){
+    			for(var j=0;j<3;j++){
+    				for(var z=0;z<3;z++){
+    					if(ww.indexOf(z)==-1){
+    						ww.push(z);
+    					}
+    				}
+    			}
+    		}
+    		alert(ww);
+    		/*
     		var ww="hello world";
     		//if(' ' in ww){
     		if(ww.search(' ')>0){
@@ -777,6 +967,15 @@
     		}else{
     			alert(ww.search(' ')+"no")
     		}
+    		
+    		var ww=[1,2,3,4,5];
+    		alert(ww);
+    		for(var i in ww){
+    			ww[i]++;
+    		}
+    		alert(ww);
+    		*/
+    		
     	},0)
     }
     
