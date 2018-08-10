@@ -58,7 +58,11 @@
   	<script type="text/javascript" src="../src/mywc.js"></script>
   	<script type="text/javascript">
   		//window.onload = originalWordle;
-  		window.onload = rigidWordle;
+  		window.onload = function (){
+  			
+  			rigidWordle();
+  			//alert("onload")
+  		}
 		document.getElementById("reset").onclick = originalWordle;
 		document.getElementById("Cforces").onclick = centerWordle;
 		document.getElementById("rigid").onclick = rigidWordle;
