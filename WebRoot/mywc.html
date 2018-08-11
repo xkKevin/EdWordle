@@ -20,12 +20,20 @@
 			width:800px;
 			padding-top: 5px;
 		}
+		#op{
+			width:800px;
+			padding-bottom:5px;
+		}
 	</style>
   </head>
   
   <body>
     <div id="cv_div" align="center">
     	<h2>Word Cloud</h2>
+    	<div id="op" align="left">
+    		&nbsp;<input type="button" id="Undo" value="Undo"/>&nbsp;
+    		&nbsp;<input type="button" id="Redo" value="Redo"/><br/>
+    	</div>
   		<canvas id="canvas" width="800" height="550"></canvas><br/>
   		<input type="button" id="showBox" value="Show Box"/>&nbsp;
   		<input type="button" id="Word_level" value="Word-level Box"/>&nbsp;
@@ -46,8 +54,12 @@
   						color:&nbsp;<input type="color" id="color" />&nbsp; 
   						font:&nbsp;<select id="font_type">
   								   		<option var="Arial">Arial</option>
-  								   		<option var="Georgia">Georgia</option>
+  								   		<option var="Courier">Courier</option>
+  								   		<option var="Serif">Serif</option>
   								   		<option var="Teen">Teen</option>
+  								   		<option var="Verdana">Verdana</option>
+  								   		<option var="Georgia">Georgia</option>
+  								   		<option var="Times">Times</option>
   								   </select>
   					</div>
   				</td>
@@ -78,8 +90,11 @@
 		};
 		document.getElementById("compact").onclick = compact;
 		//document.getElementById("preserve").onclick = preserve;
-		document.getElementById("test").onclick = test;
+
+		document.getElementById("Undo").onclick = undo;
+		document.getElementById("Redo").onclick = redo;
 		
+		document.getElementById("test").onclick = test;
   	</script>
   </body>
 </html>
