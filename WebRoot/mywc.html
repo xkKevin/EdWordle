@@ -32,7 +32,9 @@
     	<h2>Word Cloud</h2>
     	<div id="op" align="left">
     		&nbsp;<input type="button" id="Undo" value="Undo"/>&nbsp;
-    		&nbsp;<input type="button" id="Redo" value="Redo"/><br/>
+    		&nbsp;<input type="button" id="Redo" value="Redo"/>&nbsp;
+    		&nbsp;<input type="button" id="WordsList" value="Show Words List"/>&nbsp;
+    		<br/>
     	</div>
   		<canvas id="canvas" width="800" height="550"></canvas><br/>
   		<input type="button" id="showBox" value="Show Box"/>&nbsp;
@@ -45,7 +47,7 @@
 <!--   		<input type="button" id="preserve" value="Preserve"/>&nbsp; -->
   		<input type="button" id="test" value="test"/>&nbsp;<br/>
   		<div id="table" align="center">
-  		<table width="70%" align="center">
+  		<table width="80%" align="center">
   			<tr>
   				<td align="left">Mouse coordinate:<span id="coordinate">0:0</span></td>
   				<td align="right">
@@ -53,13 +55,13 @@
   					<div id="font" style="display:none">
   						color:&nbsp;<input type="color" id="color" />&nbsp; 
   						font:&nbsp;<select id="font_type">
-  								   		<option var="Arial">Arial</option>
-  								   		<option var="Courier">Courier</option>
-  								   		<option var="Serif">Serif</option>
-  								   		<option var="Teen">Teen</option>
-  								   		<option var="Verdana">Verdana</option>
-  								   		<option var="Georgia">Georgia</option>
-  								   		<option var="Times">Times</option>
+  								   		<option value="Arial">Arial</option>
+  								   		<option value="Courier">Courier</option>
+  								   		<option value="Serif">Serif</option>
+  								   		<option value="Teen">Teen</option>
+  								   		<option value="Verdana">Verdana</option>
+  								   		<option value="Georgia">Georgia</option>
+  								   		<option value="Times">Times</option>
   								   </select>
   					</div>
   				</td>
@@ -71,9 +73,7 @@
   	<script type="text/javascript">
   		//window.onload = originalWordle;
   		window.onload = function (){
-  			
   			rigidWordle();
-  			//alert("onload")
   		}
 		document.getElementById("reset").onclick = originalWordle;
 		document.getElementById("Cforces").onclick = centerWordle;
@@ -93,8 +93,10 @@
 
 		document.getElementById("Undo").onclick = undo;
 		document.getElementById("Redo").onclick = redo;
+		document.getElementById("WordsList").onclick = WordsList;
 		
 		document.getElementById("test").onclick = test;
+		
   	</script>
   </body>
 </html>

@@ -2,10 +2,10 @@ var cv = document.getElementById("canvas");
 var cxt = cv.getContext('2d');
 //cxt.save();
 //var back_font = "px Arial";
-//var list=[["Layout",346],["Xiong",105],["Kai",95],["Cloud",153],["Word",148], ["China", 246],["CAD", 180],["August", 85],["Knowledge",100],["key",69],["EdWordle",500],["Rigid Body",177],["method",102]];
+//var list=[["Layout",346],["Xiong",105],["Kai",95],["Cloud",153],["Word",148], ["China", 246],["Students", 286],["August", 85],["Hello",112],["key",88],["EdWordle",500],["Rigid Body",192],["method",102]];
 
 var list=[["Layout",846],["group",534],["cats",336],["Hope",996],["word",453],["cloud",412],["Sunday",733]];
-//var list=[["Layout",846]];
+//var list=[["Layout",846],["hello",643]];
 //var list=[["A",846],["i",462]];
 //alert(list.length)
 //alert(list[0][1]+":"+list[1][1]+":"+list[2][1]+":"+list[3][1]);
@@ -43,12 +43,18 @@ var wordlist = []; //保存所有单词的外边界及word、size、color等信�
 var wlTwoBox = [];//wordlistTwoBox:相对大小高于最大单词大小*0.5的所有单词的字母边界（两级盒子模型）
 var imgData; //记录每次全局布局
 
+var inCircle=[]; //保存在圈内的单词的序号
+var outCircle=[]; //保存在圈外的单词的序号
+var radius; //半径
+var centerW = []; //the center point of a word
+
 var editVI=-1; //editVersionIndex
 var editVersion=[]; //编辑版本
 
 var movex=0;  //鼠标移动的水平大小
 var movey=0;  //鼠标移动的垂直大小
 var selectWords=[];  //鼠标选择的单词（保存的是单词的下标）
+
 cv.onmousedown = function(e){
 	var ev = window.event || e;
 	var mx = ev.layerX || ev.offsetX;
@@ -137,7 +143,7 @@ cv.onmousedown = function(e){
 	  			}
 				cv.onmouseup = function(e){
 					cv.onmousemove = null;
-					//flesh();
+					//fresh();
 					if(movex||movey){ //表明移动了鼠标
 						cxt.putImageData(imageDataOtherWords,0,0);
 						for(var j in sNWB){
@@ -160,9 +166,10 @@ cv.onmousedown = function(e){
 							}
 							cxt.putImageData(sTLB[j].img,mnx-sTLB[j].dx,mny-sTLB[j].dy);
 						}
-						flesh();
+						fresh();
 						//imgData=cxt.getImageData(0,0,cw,ch);
 						editSave();
+						//compact();
 						for(var j in selectWords){
 							showSelectWords(selectWords[j]);
 						}
@@ -280,7 +287,7 @@ cv.onmousedown = function(e){
 						//console.log("1");
 						cv.onmousemove = null;
 						//alert(editVersion[0][0][0].word+"\n"+editVersion[0][0][0].border);
-						//flesh();
+						//fresh();
 						if(movex||movey){
 							cxt.putImageData(imageDataOtherWords,0,0);
 							wordlist[i].border[0]+=movex;
@@ -300,10 +307,11 @@ cv.onmousedown = function(e){
 							}
 							//alert(editVersion[0][0][0].word+"\n"+editVersion[0][0][0].border);
 							//alert(editVersion[0].wordlist[0].word+"\n"+editVersion[0].wordlist[0].border);
-							flesh();
+							fresh();
 							//imgData=cxt.getImageData(0,0,cw,ch);
 							
 							editSave();
+							//compact();
 							//showWord(i);
 							//getTowLevelBorder();
 							cxt.strokeStyle="red";
@@ -368,15 +376,16 @@ cv.onmousedown = function(e){
 				
 				cv.onmouseup = function(e){
 					cv.onmousemove = null;
-					//flesh();
+					//fresh();
 					if(movex||movey){
 						wordlist[i].border[0]+=movex;
 						wordlist[i].border[1]+=movey;
 						cxt.clearRect(mnx-dx,mny-dy,wordw,wordh);
 						cxt.putImageData(wordlist[i].border[4],mnx-dx+1,mny-dy+1);
-						flesh();
+						fresh();
 						//imgData=cxt.getImageData(0,0,cw,ch);
 						editSave();
+						//compact();
 						showWord(i);
 						//getTowLevelBorder();
 						movex=0;
@@ -474,8 +483,8 @@ function originalWordle(){
 		var rotateRate = size/(maxFontSize+minFontSize);
 		rotateRate = rotateRate>0.75?(Math.pow(rotateRate,1.6)>0.9?0.9:Math.pow(rotateRate,1.6)):(0.5+rotateRate/10+Math.pow(rotateRate,5));
 		//alert(rotateRate);
-		rotateDegree=Math.random()>rotateRate?(Math.random()>0.5?1:-1):0;
-		//var rotateDegree=1;
+		//var rotateDegree=Math.random()>rotateRate?(Math.random()>0.5?1:-1):0;
+		var rotateDegree=0;
 		//alert(rotateDegree);
 		//alert(x+":"+y+":"+wordw+":"+wordh); 
 		
@@ -548,7 +557,8 @@ function originalWordle(){
 		});
 		getTowLevelBorder();
 		imgData=cxt.getImageData(0,0,cw,ch);
-		editSave();
+		//editSave();
+		compact();
     }
    
 function centerWordle(){
@@ -765,7 +775,342 @@ function rigidWordle(){
 }
 
 function compact(){
+	cxt.putImageData(imgData,0,0)
+	countCW(centerW);
+	radius=1;
+	inCircle.length=0; 
+	outCircle.length=0;
+	for(var i=0;i<len;i++){
+		outCircle.push(i);
+	}
+	while(spiralScheme());
+	imgData=cxt.getImageData(0,0,cw,ch);
+	fresh();
+	editSave();
+	/*
+	for(var ii in inCircle)
+		alert(inCircle[ii].i+":"+inCircle[ii].v.length);
+	*/
+	//alert(radius);
+}
+
+function spiralScheme(){
+	if(outCircle.length==0){
+		return false;
+	}
+	//var newr=radius+1;
+	for(var i=0,l=outCircle.length;i<l;i++){
+		//var dist = EucDist(centerW[outCircle[i]].cwx,centerW[outCircle[i]].cwy,cw/2,ch/2);
+		if(centerW[outCircle[i]].dist<=radius){
+			var x=Math.floor(cw/2-centerW[outCircle[i]].cwx);
+			var y=Math.floor(ch/2-centerW[outCircle[i]].cwy);
+			reLayout(outCircle[i],x,y);
+			
+			var k=outCircle.splice(i,1);
+			l--;
+			var x1,y1,x2,y2;
+			if(k<twoBoxLen){  //保存圈内的顶点
+				var vv=[];
+				for(var j in wlTwoBox[k].box){
+					x1=wlTwoBox[k].box[j].border[0];
+					y1=wlTwoBox[k].box[j].border[1];
+					x2=x1+wlTwoBox[k].box[j].border[2];
+					y2=y1+wlTwoBox[k].box[j].border[3];
+					vv.push([x1,y1,x2,y2]);
+				}
+				inCircle.push({
+					i:k,
+					v:vv
+				});
+			}else{
+				x1=wordlist[k].border[0];
+				y1=wordlist[k].border[1];
+				x2=x1+wordlist[k].border[2];
+				y2=y1+wordlist[k].border[3];
+				inCircle.push({
+					i:k,
+					v:[x1,y1,x2,y2]
+				});
+			}
+			//alert(outCircle+"\n"+inCircle+"\n"+radius);
+		}
+	}
+	radius++;
+	return true;
+}
+
+function reLayout(i,x,y){   //x=x0-xW,y=y0-yW  x0:cw/2,y0:ch/2
+	var dx,dy;
+	var collision=0;
+	var bL = moveWord(i,0,0); //在移动单词之前先检测该单词是否就已经发生了碰撞
 	
+	/*
+	switch(bL){
+	case 1: alert(wordlist[i].word+":1");break;
+	case 2: alert(wordlist[i].word+":2");break;
+	case 3: alert(wordlist[i].word+":3");break;
+	case 4: alert(wordlist[i].word+":4");break;
+	case 5: alert(wordlist[i].word+":5");break;
+	case 6: alert(wordlist[i].word+":6");break;
+	case 7: alert(wordlist[i].word+":7");break;
+	case 8: alert(wordlist[i].word+":8");break;
+	}
+	*/
+	
+	while(bL){
+		if(x>0&&y>0){
+			bL=moveWord2(i,-1,-1);
+			x++;
+			y++;
+		}else if(x>0&&y<0){
+			bL=moveWord2(i,-1,1);
+			x++;
+			y--;
+		}else if(x<0&&y>0){
+			bL=moveWord2(i,1,-1);
+			x--;
+			y++;
+		}else{
+			bL=moveWord2(i,1,1);
+			x--;
+			y--;
+		}
+	}
+	
+
+	while((x||y)&&!collision){
+		if(x==0){
+			dx=0;
+			dy=Math.abs(y)/y;
+		}else if(y==0){
+			dy=0;
+			dx=Math.abs(x)/x;
+		}else if(Math.abs(x)<Math.abs(y)){
+			dx=Math.abs(x)/x;
+			dy=2*Math.abs(y)/y;
+		}else if(Math.abs(x)>Math.abs(y)){
+			dx=2*Math.abs(x)/x;
+			dy=Math.abs(y)/y;
+		}else{
+			dx=Math.abs(x)/x;
+			dy=Math.abs(y)/y;
+		}
+		x-=dx;
+		y-=dy;
+		collision=moveWord(i,dx,dy);
+		
+		if(collision){
+			if(Math.abs(x)>=Math.abs(y)){
+				singleDirection(i,x,1);
+				singleDirection(i,y,0);
+			}else{
+				singleDirection(i,y,0);
+				singleDirection(i,x,1);
+			}
+		}
+	}
+}
+
+//精确单方向移动。xy表示x或y到中心x0或y0的距离,direct为1，则为水平，0为垂直
+function singleDirection(i,xy,direct){ 
+	var collision;
+	var dxy;
+	while(xy){
+		dxy=Math.abs(xy)/xy;
+		xy-=dxy;
+		if(direct){ //表示水平
+			collision=moveWord(i,dxy,0);
+		}else{ //表示垂直
+			collision=moveWord(i,0,dxy);
+		}
+		if(collision) return true;
+	}
+	return false;
+}
+
+//移动第i个单词，平移的距离为dx，dy ,如果未发现碰撞，则返回0，如果发现碰撞，则返回碰撞类型（1-8）
+function moveWord(i,dx,dy){ 
+	//判断当前被移动的单词类型
+	if(i<twoBoxLen){ //当前单词为两级盒子模型
+		var wordl=wlTwoBox[i].box;
+		
+		var vv=[];
+		for(var j in wordl){
+			x1=wlTwoBox[i].box[j].border[0]+dx;
+			y1=wlTwoBox[i].box[j].border[1]+dy;
+			x2=x1+wlTwoBox[i].box[j].border[2];
+			y2=y1+wlTwoBox[i].box[j].border[3];
+			vv.push([x1,y1,x2,y2]);
+		}
+		for(kk in vv){
+			for(var k in inCircle){
+				var j=inCircle[k].i;
+				if(j<twoBoxLen){  //判断圈内的单词类型
+					for(var ii in inCircle[k].v){
+						var ct = collisionDetect(vv[kk],inCircle[k].v[ii]);
+						if(ct) return ct;
+					}
+				}else{
+					var ct = collisionDetect(vv[kk],inCircle[k].v);
+					if(ct) return ct;
+				}
+			}
+		}
+		
+		for(var k in wordl){
+			var xl=wordl[k].border[0]; //x_left
+			var yt=wordl[k].border[1]; //x_top
+			cxt.clearRect(xl,yt,wordl[k].border[2],wordl[k].border[3]);
+		}
+		wordlist[i].border[0]+=dx;
+		wordlist[i].border[1]+=dy;
+		wlTwoBox[i].minX+=dx;
+		wlTwoBox[i].minY+=dy;
+		for(var k in wordl){
+			wlTwoBox[i].box[k].border[0]+=dx;
+			wlTwoBox[i].box[k].border[1]+=dy;
+			cxt.putImageData(wlTwoBox[i].box[k].border[4],wlTwoBox[i].box[k].border[0],wlTwoBox[i].box[k].border[1]);
+		}
+	}else{ //当前单词为普通盒子模型
+		var x1=wordlist[i].border[0]+dx;
+		var y1=wordlist[i].border[1]+dy;
+		var x2=x1+wordlist[i].border[2];
+		var y2=y1+wordlist[i].border[3];
+		for(var k in inCircle){
+			var j=inCircle[k].i;
+			if(j<twoBoxLen){  //判断圈内的单词类型
+				for(var ii in inCircle[k].v){
+					var ct = collisionDetect([x1,y1,x2,y2],inCircle[k].v[ii]);//ct:collision type
+					if(ct) return ct;
+				}
+			}else{
+				var ct = collisionDetect([x1,y1,x2,y2],inCircle[k].v);
+				if(ct) return ct;
+			}
+		}
+		cxt.clearRect(wordlist[i].border[0],wordlist[i].border[1],wordlist[i].border[2],wordlist[i].border[3]);
+		wordlist[i].border[0]+=dx;
+		wordlist[i].border[1]+=dy;
+		cxt.putImageData(wordlist[i].border[4],wordlist[i].border[0],wordlist[i].border[1]);
+	}
+	return 0;
+}
+
+function moveWord2(i,dx,dy){ 
+	//判断当前被移动的单词类型
+	if(i<twoBoxLen){ //当前单词为两级盒子模型
+		var wordl=wlTwoBox[i].box;
+		
+		var vv=[];
+		for(var j in wordl){
+			x1=wlTwoBox[i].box[j].border[0]+dx;
+			y1=wlTwoBox[i].box[j].border[1]+dy;
+			x2=x1+wlTwoBox[i].box[j].border[2];
+			y2=y1+wlTwoBox[i].box[j].border[3];
+			vv.push([x1,y1,x2,y2]);
+		}
+		
+		for(var k in wordl){
+			var xl=wordl[k].border[0]; //x_left
+			var yt=wordl[k].border[1]; //x_top
+			cxt.clearRect(xl,yt,wordl[k].border[2],wordl[k].border[3]);
+		}
+		wordlist[i].border[0]+=dx;
+		wordlist[i].border[1]+=dy;
+		wlTwoBox[i].minX+=dx;
+		wlTwoBox[i].minY+=dy;
+		for(var k in wordl){
+			wlTwoBox[i].box[k].border[0]+=dx;
+			wlTwoBox[i].box[k].border[1]+=dy;
+			cxt.putImageData(wlTwoBox[i].box[k].border[4],wlTwoBox[i].box[k].border[0],wlTwoBox[i].box[k].border[1]);
+		}
+		
+		for(kk in vv){
+			for(var k in inCircle){
+				var j=inCircle[k].i;
+				if(j<twoBoxLen){  //判断圈内的单词类型
+					for(var ii in inCircle[k].v){
+						var ct = collisionDetect(vv[kk],inCircle[k].v[ii]);
+						if(ct) return ct;
+					}
+				}else{
+					var ct = collisionDetect(vv[kk],inCircle[k].v);
+					if(ct) return ct;
+				}
+			}
+		}
+	}else{ //当前单词为普通盒子模型
+		var x1=wordlist[i].border[0]+dx;
+		var y1=wordlist[i].border[1]+dy;
+		var x2=x1+wordlist[i].border[2];
+		var y2=y1+wordlist[i].border[3];
+
+		cxt.clearRect(wordlist[i].border[0],wordlist[i].border[1],wordlist[i].border[2],wordlist[i].border[3]);
+		wordlist[i].border[0]+=dx;
+		wordlist[i].border[1]+=dy;
+		cxt.putImageData(wordlist[i].border[4],wordlist[i].border[0],wordlist[i].border[1]);
+		
+		for(var k in inCircle){
+			var j=inCircle[k].i;
+			if(j<twoBoxLen){  //判断圈内的单词类型
+				for(var ii in inCircle[k].v){
+					var ct = collisionDetect([x1,y1,x2,y2],inCircle[k].v[ii]);//ct:collision type
+					if(ct) return ct;
+				}
+			}else{
+				var ct = collisionDetect([x1,y1,x2,y2],inCircle[k].v);
+				if(ct) return ct;
+			}
+		}
+	}
+	return 0;
+}
+
+//判断两个盒子是否碰撞，如果未发现碰撞，则返回0，如果发现碰撞，则返回碰撞类型（1-8）
+function collisionDetect(box1,box2){
+	if(box1[2]>=box2[0]&&box1[2]<=box2[2]&&box1[3]>=box2[1]&&box1[3]<=box2[3]) return 1; //1右下角在2内
+	if(box1[0]>=box2[0]&&box1[0]<=box2[2]&&box1[3]>=box2[1]&&box1[3]<=box2[3]) return 2; //1左下角在2内
+	if(box1[2]>=box2[0]&&box1[2]<=box2[2]&&box1[1]>=box2[1]&&box1[1]<=box2[3]) return 3; //1右上角在2内
+	if(box1[0]>=box2[0]&&box1[0]<=box2[2]&&box1[1]>=box2[1]&&box1[1]<=box2[3]) return 4; //1左上角在2内
+	
+	if(box2[2]>=box1[0]&&box2[2]<=box1[2]&&box2[3]>=box1[1]&&box2[3]<=box1[3]) return 5; //2右下角在1内
+	if(box2[0]>=box1[0]&&box2[0]<=box1[2]&&box2[3]>=box1[1]&&box2[3]<=box1[3]) return 6; //2左下角在1内
+	if(box2[2]>=box1[0]&&box2[2]<=box1[2]&&box2[1]>=box1[1]&&box2[1]<=box1[3]) return 7; //2右上角在1内
+	if(box2[0]>=box1[0]&&box2[0]<=box1[2]&&box2[1]>=box1[1]&&box2[1]<=box1[3]) return 8; //2左上角在1内
+	return 0;
+}
+
+function EucDist(x1,y1,x2,y2){
+	return Math.sqrt(Math.pow(x1-x2, 2)+Math.pow(y1-y2, 2));
+}
+
+function countCW(centerW){
+	centerW.length=0;
+	var cwx;
+	var cwy;
+	var dist;
+	for(var i=0;i<len;i++){
+		if(i<twoBoxLen){
+			cwx=Math.ceil(wlTwoBox[i].minX+wlTwoBox[i].minW/2);
+			cwy=Math.floor(wlTwoBox[i].minY+wlTwoBox[i].minH/2);
+		}else{
+			cwx=Math.ceil(wordlist[i].border[0]+wordlist[i].border[2]/2);
+			cwy=Math.floor(wordlist[i].border[1]+wordlist[i].border[3]/2);
+		}
+		dist=EucDist(cwx,cwy,cw/2,ch/2);
+		centerW.push({
+			cwx:cwx,
+			cwy:cwy,
+			dist:dist
+		});
+	}
+	/*
+	var str="";
+	for(var i=0;i<len;i++){
+		str+=centerW[i].cwx+":"+centerW[i].cwy+"\n";
+	}
+	alert(str);
+	*/
 }
 
 function showWord(i){
@@ -794,7 +1139,14 @@ function showBox(color){
 		//cxt.putImageData(imgData,0,0);
 		switch_box=true; 
 	}
-	
+	/*
+	if(switch_Letter){
+		Letter_levelBox("red");
+	}
+	if(switch_Word){
+		Word_levelBox("black");
+	}
+	*/
 	/*
 	cxt.save();
 	cxt.strokeStyle=color;
@@ -863,8 +1215,15 @@ function Word_levelBox(color){
 	}else{
 		cxt.putImageData(imgData,0,0);
 		switch_Word=true; 
+		/*
+		if(switch_Letter){
+			Letter_levelBox("red");
+		}
+		if(switch_box){
+			showBox("red");
+		}
+		*/
 	}
-	
 }
 
 function Letter_levelBox(color){
@@ -881,6 +1240,14 @@ function Letter_levelBox(color){
 	}else{
 		cxt.putImageData(imgData,0,0);
 		switch_Letter=true; 
+		/*
+		if(switch_Word){
+			Word_levelBox("black");
+		}
+		if(switch_box){
+			showBox("red");
+		}
+		*/
 	}
 }
 
@@ -1193,15 +1560,43 @@ function changeWordColor(color,i){
 	cxt.fillText(wordlist[i].word,0,450);
 	var wordw=Math.floor(cxt.measureText(wordlist[i].word).width); //注意，像素一定要是整数，要不然会出错
 	var newWBorder = getBorder(0,450,wordw,Math.floor(wordlist[i].border[3]*1.5));
-	cxt.clearRect(0,450,wordw,Math.floor(wordlist[i].border[3]*1.5));
+	//cxt.clearRect(0,450,wordw,Math.floor(wordlist[i].border[3]*1.5));
 	//cxt.strokeRect(newWBorder[0],newWBorder[1],newWBorder[2],newWBorder[3]);
-	cxt.putImageData(newWBorder[4],wordlist[i].border[0],wordlist[i].border[1]);
 	wordlist[i].border[4] = newWBorder[4];
-	
 	if(i<twoBoxLen){
+		//alert(wordlist[i].border);
+		var wordl=wlTwoBox[i].box;
+		for(var k in wordl){
+			var xl=wordl[k].border[0]; //x_left
+			var yt=wordl[k].border[1]; //x_top
+			cxt.clearRect(xl,yt,wordl[k].border[2],wordl[k].border[3]);
+		}
+		var wx=wordlist[i].border[0];
+		var wy=wordlist[i].border[1];
+		
+		wordlist[i].border[0] = newWBorder[0];
+		wordlist[i].border[1] = newWBorder[1];
+		//wordlist[i].border[2] = newWBorder[2];
+		//wordlist[i].border[3] = newWBorder[3];
 		getTowLevelBorder();
+		var dx=wx-newWBorder[0];
+		var dy=wy-newWBorder[1];
+		
+		wordlist[i].border[0]=wx;
+		wordlist[i].border[1]=wy;
+		wlTwoBox[i].minX+=dx;
+		wlTwoBox[i].minY+=dy;
+		for(var k in wordl){
+			wlTwoBox[i].box[k].border[0]+=dx;
+			wlTwoBox[i].box[k].border[1]+=dy;
+			cxt.putImageData(wlTwoBox[i].box[k].border[4],wlTwoBox[i].box[k].border[0],wlTwoBox[i].box[k].border[1]);
+		}
+		//alert(wordlist[i].border);
+	}else{
+		cxt.putImageData(newWBorder[4],wordlist[i].border[0],wordlist[i].border[1]);
+		
 	}
-	
+	cxt.clearRect(0,450,wordw,Math.floor(wordlist[i].border[3]*1.5));
 	imgData=cxt.getImageData(0,0,cw,ch);
 	editSave();
 	showWord(i);
@@ -1217,25 +1612,52 @@ function changeWordFont(fontType,i){
 	cxt.fillText(wordlist[i].word,0,450);
 	var wordw=Math.floor(cxt.measureText(wordlist[i].word).width); //注意，像素一定要是整数，要不然会出错
 	var newWBorder = getBorder(0,450,wordw,wordlist[i].border[3]*2);
-	cxt.clearRect(0,450,wordw,wordlist[i].border[3]*2);
-	cxt.clearRect(wordlist[i].border[0],wordlist[i].border[1],wordlist[i].border[2],wordlist[i].border[3]);
-	//cxt.strokeRect(newWBorder[0],newWBorder[1],newWBorder[2],newWBorder[3]);
-	cxt.putImageData(newWBorder[4],wordlist[i].border[0],wordlist[i].border[1]);
-	
+	//cxt.clearRect(0,450,wordw,wordlist[i].border[3]*2);
 	wordlist[i].border[2] = newWBorder[2];
 	wordlist[i].border[3] = newWBorder[3];
 	wordlist[i].border[4] = newWBorder[4];
 	wordlist[i].font=fontType;
 	if(i<twoBoxLen){
+		//alert(wordlist[i].border);
+		var wordl=wlTwoBox[i].box;
+		for(var k in wordl){
+			var xl=wordl[k].border[0]; //x_left
+			var yt=wordl[k].border[1]; //x_top
+			cxt.clearRect(xl,yt,wordl[k].border[2],wordl[k].border[3]);
+		}
+		var wx=wordlist[i].border[0];
+		var wy=wordlist[i].border[1];
+		
+		wordlist[i].border[0] = newWBorder[0];
+		wordlist[i].border[1] = newWBorder[1];
 		getTowLevelBorder();
+		var dx=wx-newWBorder[0];
+		var dy=wy-newWBorder[1];
+		
+		wordlist[i].border[0]=wx;
+		wordlist[i].border[1]=wy;
+		wlTwoBox[i].minX+=dx;
+		wlTwoBox[i].minY+=dy;
+		for(var k in wordl){
+			wlTwoBox[i].box[k].border[0]+=dx;
+			wlTwoBox[i].box[k].border[1]+=dy;
+			cxt.putImageData(wlTwoBox[i].box[k].border[4],wlTwoBox[i].box[k].border[0],wlTwoBox[i].box[k].border[1]);
+		}
+		//alert(wordlist[i].border);
+	}else{
+		cxt.clearRect(wordlist[i].border[0],wordlist[i].border[1],wordlist[i].border[2],wordlist[i].border[3]);
+		cxt.putImageData(newWBorder[4],wordlist[i].border[0],wordlist[i].border[1]);
+		
 	}
 	
+	cxt.clearRect(0,450,wordw,wordlist[i].border[3]*2);
 	imgData=cxt.getImageData(0,0,cw,ch);
 	editSave();
+	//compact();
 	showWord(i);
 }
 
-function flesh(){
+function fresh(){
 	cxt.clearRect(0,0,cw,ch);
 	for(var i in wordlist){
 		if(i<twoBoxLen){
@@ -1247,6 +1669,9 @@ function flesh(){
 		}	
 	}
 	imgData=cxt.getImageData(0,0,cw,ch);
+	var switch_box=true; //外边框开关
+	var switch_Letter=true; //字母边框开关
+	var switch_Word=true; //单词边框开关
 }
 
 function editSave(){
@@ -1408,8 +1833,32 @@ function deepClone(d,s,type){ //1:wordlist  0:wlTwoBox   深复制（深拷贝�
 	}//-else
 }
 
+function WordsList(){
+	var str="Words List\nword : frequency\n";
+	/*
+	var sum=0;
+	for(var i in list){
+		sum+=list[i][1];
+	}
+	var weight=[];  //计算权重
+	for(var i in list){
+		var w=list[i][1]/sum;
+		weight.push(w.toFixed(2));
+	}
+	*/
+	for(var i=0;i<len;i++){
+		str=str+list[i][0]+" : "+list[i][1]+"\n";
+		//str=str+list[i][0]+" : "+list[i][1]+" : "+weight[i]+"\n";
+	}
+	alert(str);
+}
+
 function test(){
 	setTimeout(function (){
+		//alert(twoBoxLen)
+		moveWord(0,50,10);
+		imgData=cxt.getImageData(0,0,cw,ch);
+		//alert(EucDist(1,0.99,4,5));
 		/*
 		var dd={i:1,j:2};
 		var xx="xiongkai";
@@ -1430,7 +1879,7 @@ function test(){
 			alert(tt[i].dd.i+"\n"+tt[i].xx);
 		}
 		*/
-		
+		/*
 		var obj = [0,1];
 		var obj2 = obj;
 		
@@ -1440,7 +1889,7 @@ function test(){
 		}
 		test(obj2);
 		alert(obj+":"+obj2);
-		
+		*/
 		/*
 		var ww=[];
 		for(var i=0;i<3;i++){
