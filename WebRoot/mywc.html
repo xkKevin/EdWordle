@@ -33,19 +33,27 @@
     	<div id="op" align="left">
     		&nbsp;<input type="button" id="Undo" value="Undo"/>&nbsp;
     		&nbsp;<input type="button" id="Redo" value="Redo"/>&nbsp;
-    		&nbsp;<input type="button" id="WordsList" value="Show Words List"/>&nbsp;
+    		&nbsp;<input type="button" id="CWL" value="Change Words List"/>&nbsp;
+    		&nbsp;<input type="button" id="Save" value="Save"/>&nbsp;
+    		<select id="img_type">
+		   		<option value="jpg">jpg</option>
+		   		<option value="png">png</option>
+		   		<option value="bmp">bmp</option>
+  			</select>
     		<br/>
     	</div>
   		<canvas id="canvas" width="800" height="550"></canvas><br/>
+  		<input type="button" id="WordsList" value="Show Words List"/>&nbsp;
   		<input type="button" id="showBox" value="Show Box"/>&nbsp;
   		<input type="button" id="Word_level" value="Word-level Box"/>&nbsp;
   		<input type="button" id="Letter_level" value="Letter-level Box"/>&nbsp;
-  		<input type="button" id="reset" value="ReLayout"/>&nbsp;
-  		<input type="button" id="Cforces" value="Center Forces"/>&nbsp;
-  		<input type="button" id="rigid" value="Rigid Body"/>&nbsp;
+  		<input type="button" id="reLayout" value="ReLayout"/>&nbsp;
+  		<input type="button" id="ReLayout2" value="ReLayout2"/>&nbsp;
+  		<!-- <input type="button" id="Cforces" value="Center Forces"/>&nbsp; -->
   		<input type="button" id="compact" value="Compact"/>&nbsp;
 <!--   		<input type="button" id="preserve" value="Preserve"/>&nbsp; -->
-  		<input type="button" id="test" value="test"/>&nbsp;<br/>
+  		<!-- <input type="button" id="test" value="test"/>&nbsp; -->
+  		<br/>
   		<div id="table" align="center">
   		<table width="80%" align="center">
   			<tr>
@@ -72,12 +80,10 @@
   	<script type="text/javascript" src="../src/mywc.js"></script>
   	<script type="text/javascript">
   		//window.onload = originalWordle;
-  		window.onload = function (){
-  			rigidWordle();
-  		}
-		document.getElementById("reset").onclick = originalWordle;
-		document.getElementById("Cforces").onclick = centerWordle;
-		document.getElementById("rigid").onclick = rigidWordle;
+  		window.onload = changeWL;
+		document.getElementById("ReLayout2").onclick = originalWordle;
+		//document.getElementById("Cforces").onclick = centerWordle;
+		document.getElementById("reLayout").onclick = changeLayout;
 		//document.getElementById("showBox").onclick = showBox;
 		document.getElementById("showBox").onclick = function(){
 			showBox("red");
@@ -93,9 +99,13 @@
 
 		document.getElementById("Undo").onclick = undo;
 		document.getElementById("Redo").onclick = redo;
+		document.getElementById("CWL").onclick = changeWL;
+		document.getElementById("Save").onclick = function(){
+			var type =  document.getElementById("img_type").value;
+			download(type);
+		};
 		document.getElementById("WordsList").onclick = WordsList;
-		
-		document.getElementById("test").onclick = test;
+		//document.getElementById("test").onclick = test;
 		
   	</script>
   </body>

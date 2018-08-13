@@ -23,7 +23,9 @@
   		颜色：<input type="color" id="color" value="black"/>&nbsp;
   		粗细：<input type="range" id="range" min="1" max="20" value="3"><span id="r">3</span>
   		<input type="button" id="eraser" value="eraser"/>&nbsp;
-  		<input type="button" id="reset" value="reset"/><br/>
+  		<input type="button" id="reset" value="reset"/>&nbsp;
+  		 <input type="button" value="Save" id="save" />&nbsp;
+  		<br/>
   		<canvas id="canvas" width="800" height="550"></canvas>
   		<br/><span>注意：橡皮擦的大小也可以通过粗细来调节</span>
   	</div>
@@ -70,6 +72,35 @@
   			cv.strokeStyle=canvas.style.background;
   			//cv.lineWidth=25;
   		} 
+  		document.getElementById("save").onclick = function(){
+  			 var type = 'png';
+   			 download(type);
+  		} 
+  		
+  		//图片下载操作,指定图片类型
+		function download(type) {
+		    //设置保存图片的类型
+		    var imgdata = canvas.toDataURL(type);
+		    //将mime-type改为image/octet-stream,强制让浏览器下载
+		    var fixtype = function (type) {
+		        type = type.toLocaleLowerCase().replace(/jpg/i, 'jpeg');
+		        var r = type.match(/png|jpeg|bmp|gif/)[0];
+		        return 'image/' + r;
+		    }
+		    imgdata = imgdata.replace(fixtype(type), 'image/octet-stream')
+		    //将图片保存到本地
+		    var saveFile = function (data, filename) {
+		        var link = document.createElement('a');
+		        link.href = data;
+		        link.download = filename;
+		        var event = document.createEvent('MouseEvents');
+		        event.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+		        link.dispatchEvent(event);
+		    }
+		    var timestamp=new Date().getTime(); //new Date().toLocaleDateString();
+		    var filename = timestamp + '.' + type;
+		    saveFile(imgdata, filename);
+		}
   	</script>
   </body>
 </html>

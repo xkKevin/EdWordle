@@ -2,17 +2,13 @@ var cv = document.getElementById("canvas");
 var cxt = cv.getContext('2d');
 //cxt.save();
 //var back_font = "px Arial";
-//var list=[["Layout",346],["Xiong",105],["Kai",95],["Cloud",153],["Word",148], ["China", 246],["Students", 286],["August", 85],["Hello",112],["key",88],["EdWordle",500],["Rigid Body",192],["method",102]];
+var list2=[["Layout",346],["Xiong",105],["Kai",95],["Cloud",153],["Word",148], ["China", 246],["Students", 286],["August", 85],["Hello",112],["key",88],["EdWordle",500],["Rigid Body",192],["method",102]];
+var list1=[["Layout",846],["group",534],["cats",336],["Hope",996],["word",453],["cloud",412],["Sunday",733]];
+var list3=[["Layout",846],["hello",643]];
+var wlist=[list1,list2,list3];
+var list=[];
+var len,twoBoxLen,max,min; //max:最高词频 min:最低词频
 
-var list=[["Layout",846],["group",534],["cats",336],["Hope",996],["word",453],["cloud",412],["Sunday",733]];
-//var list=[["Layout",846],["hello",643]];
-//var list=[["A",846],["i",462]];
-//alert(list.length)
-//alert(list[0][1]+":"+list[1][1]+":"+list[2][1]+":"+list[3][1]);
-list.sort(function(x,y){
-	return y[1]-x[1];
-});
-//alert(list[0][1]+":"+list[1][1]+":"+list[2][1]+":"+list[3][1]);
 var cw = cv.width;
 var ch = cv.height;
 //alert(cw+";;;"+ch)
@@ -21,20 +17,6 @@ var minFontSize = 10;
 var size = 0;
 var color;
 var rotateDegree;
-	
-var min = list[0][1]; //最低词频
-var max = 0;          //最高词频
-var len = list.length;
-var twoBoxLen = Math.floor(len/2);
-//var twoBoxLen=len
-for (var i = 0; i < len; i++) {
-    if (min > list[i][1]) {
-        min = list[i][1];
-    }
-    if (max < list[i][1]) {
-        max = list[i][1];
-    }
-}
 
 var switch_box=true; //外边框开关
 var switch_Letter=true; //字母边框开关
@@ -54,6 +36,29 @@ var editVersion=[]; //编辑版本
 var movex=0;  //鼠标移动的水平大小
 var movey=0;  //鼠标移动的垂直大小
 var selectWords=[];  //鼠标选择的单词（保存的是单词的下标）
+
+var cwl=0;
+function changeWL(){
+	list.length=0;
+	for(var i in wlist[cwl]){
+		list.push(wlist[cwl][i]);
+	}
+	cwl=(cwl+1)%wlist.length;
+	min = list[0][1]; //最低词频
+	max = 0;          //最高词频
+	len = list.length;
+	twoBoxLen = Math.floor(len/2);
+	//var twoBoxLen=len
+	for (var i = 0; i < len; i++) {
+	    if (min > list[i][1]) {
+	        min = list[i][1];
+	    }
+	    if (max < list[i][1]) {
+	        max = list[i][1];
+	    }
+	}
+	changeLayout();
+}
 
 cv.onmousedown = function(e){
 	var ev = window.event || e;
@@ -454,7 +459,9 @@ cv.onmouseup = function(e){
 */
 
 function originalWordle(){
-	
+	var lx,rx,ty,by;
+	lx=rx=ty=by=0;
+	lx=100;ty=90;
 	cxt.clearRect(0,0,cw,ch);
 	wordlist.length=0;
 	switch_box=true;
@@ -462,6 +469,7 @@ function originalWordle(){
 	switch_Word=true;
 	cxt.textBaseline = 'top';
 	cxt.textAlign='start';
+	shuffle(list);
 	for(var i=0;i<len;i++){
 		
 		size = Math.floor((maxFontSize - minFontSize)/(max-min) * (list[i][1]-min/2) +minFontSize);
@@ -472,10 +480,28 @@ function originalWordle(){
 		cxt.fillStyle = color;
 		
 		cxt.save();
-		
-		var x = Math.floor(Math.random()*cw);
-		var y = Math.floor(Math.random()*ch);
-		
+		var random=Math.floor(Math.random()*4);
+		var x,y;
+		switch(random){
+		case 0:  //上
+			//x=Math.floor(Math.random()*cw);
+			x=lx+Math.floor(Math.random()*(cw-lx-rx));
+			y=ty;
+			break;
+		case 1:  //右
+			x=cw-rx;
+			//y=Math.floor(Math.random()*ch);
+			y=ty+Math.floor(Math.random()*(ch-ty-by));
+			break;
+		case 2:  //下
+			x=lx+Math.floor(Math.random()*(cw-lx-rx));
+			y=ch-by;
+			break;
+		case 3:  //左
+			x=lx;
+			y=ty+Math.floor(Math.random()*(ch-ty-by));
+			break;
+		}
 		//var x=400;
 		//var y=200;
 		var wordw = Math.floor(cxt.measureText(list[i][0]).width);
@@ -483,8 +509,9 @@ function originalWordle(){
 		var rotateRate = size/(maxFontSize+minFontSize);
 		rotateRate = rotateRate>0.75?(Math.pow(rotateRate,1.6)>0.9?0.9:Math.pow(rotateRate,1.6)):(0.5+rotateRate/10+Math.pow(rotateRate,5));
 		//alert(rotateRate);
-		//var rotateDegree=Math.random()>rotateRate?(Math.random()>0.5?1:-1):0;
-		var rotateDegree=0;
+		var rotateDegree=Math.random()>rotateRate?(Math.random()>0.5?1:-1):0;
+		//if(i<twoBoxLen) rotateDegree=0;
+		//var rotateDegree=0;
 		//alert(rotateDegree);
 		//alert(x+":"+y+":"+wordw+":"+wordh); 
 		
@@ -551,16 +578,24 @@ function originalWordle(){
 		//alert(wordlist.length)
 		//alert(wordlist[i][0]+":"+wordlist[i][1]+":"+wordlist[i][2]+":"+wordlist[i][3]+":"+wordlist[i][4]+":"+wordlist[i][5]+":"+wordlist[i][6]);
 		//cxt.restore();
+		switch(random){
+		case 0: ty+=border[3];break;
+		case 1: rx+=border[2];break;
+		case 2: by+=border[3];break;
+		case 3: lx+=border[2];break;
 		}
-		wordlist.sort(function(x,y){
-			return y.border[2]-x.border[2];
-		});
-		getTowLevelBorder();
-		imgData=cxt.getImageData(0,0,cw,ch);
-		//editSave();
-		compact();
-    }
-   
+		}
+	wordlist.sort(function(x,y){
+		return y.border[2]-x.border[2];
+	});
+	getTowLevelBorder();
+	//imgData=cxt.getImageData(0,0,cw,ch);
+	//fresh();
+	//editSave();
+	//alert(lx+":"+rx+":"+ty+":"+by);
+	compact();
+}
+
 function centerWordle(){
 	cxt.clearRect(0,0,cw,ch);
 	wordlist.length=0;
@@ -658,7 +693,8 @@ function centerWordle(){
 		return y.border[2]-x.border[2];
 	});
 	getTowLevelBorder();
-	imgData=cxt.getImageData(0,0,cw,ch);
+	//imgData=cxt.getImageData(0,0,cw,ch);
+	fresh();
 	editSave();
 }
 
@@ -673,6 +709,7 @@ function rigidWordle(){
 	cxt.textAlign='center';
 	var distanceUp=0;
 	var distanceDown=0;
+	shuffle(list);
 	for(var i=0;i<len;i++){
 		
 		size = Math.floor((maxFontSize - minFontSize)/(max-min) * (list[i][1]-min/2) +minFontSize);
@@ -771,11 +808,35 @@ function rigidWordle(){
 	list.unshift(first);
 	*/
 	imgData=cxt.getImageData(0,0,cw,ch);
-	editSave();
+	//editSave();
+}
+
+function changeLayout(){
+	rigidWordle();
+	var lx,rx,ty,by,dx,dy;
+	ty=by=0;
+	for(var i=len-1;i>=0;i--){
+		lx=wordlist[i].border[0];
+		rx=cw-lx-wordlist[i].border[2];
+		if(wordlist[i].border[1]>ch/2){
+			by+=wordlist[i].border[3]+1;
+			dy=ch-wordlist[i].border[1]-by;
+		}else{
+			dy=ty-wordlist[i].border[1];
+			ty+=wordlist[i].border[3]+1;
+			
+		}
+		dx=Math.floor(Math.min(lx,rx)*(2*(Math.random()-0.5)));
+		//alert(dx+":"+dy);
+		moveWord3(i,dx,dy);
+	}
+	//imgData=cxt.getImageData(0,0,cw,ch);
+	compact();
 }
 
 function compact(){
-	cxt.putImageData(imgData,0,0)
+	cxt.putImageData(imgData,0,0);
+	var beforeImage=imgData;
 	countCW(centerW);
 	radius=1;
 	inCircle.length=0; 
@@ -784,9 +845,16 @@ function compact(){
 		outCircle.push(i);
 	}
 	while(spiralScheme());
-	imgData=cxt.getImageData(0,0,cw,ch);
+	//imgData=cxt.getImageData(0,0,cw,ch);
 	fresh();
-	editSave();
+	for(var l=imgData.data.length,i=l/4;i<l;i++){ //只有两次改变不一样的时候才保存版本
+		if(imgData.data[i]!=beforeImage.data[i]){
+			//alert(imgData.data[i]+":"+beforeImage.data[i]);
+			editSave();
+			break;
+		}
+	}
+	//alert("same");
 	/*
 	for(var ii in inCircle)
 		alert(inCircle[ii].i+":"+inCircle[ii].v.length);
@@ -1113,6 +1181,76 @@ function countCW(centerW){
 	*/
 }
 
+function moveWord3(i,dx,dy){ 
+	//判断当前被移动的单词类型
+	if(i<twoBoxLen){ //当前单词为两级盒子模型
+		var wordl=wlTwoBox[i].box;
+		/*
+		var vv=[];
+		for(var j in wordl){
+			x1=wlTwoBox[i].box[j].border[0]+dx;
+			y1=wlTwoBox[i].box[j].border[1]+dy;
+			x2=x1+wlTwoBox[i].box[j].border[2];
+			y2=y1+wlTwoBox[i].box[j].border[3];
+			vv.push([x1,y1,x2,y2]);
+		}
+		for(kk in vv){
+			for(var k in inCircle){
+				var j=inCircle[k].i;
+				if(j<twoBoxLen){  //判断圈内的单词类型
+					for(var ii in inCircle[k].v){
+						var ct = collisionDetect(vv[kk],inCircle[k].v[ii]);
+						if(ct) return ct;
+					}
+				}else{
+					var ct = collisionDetect(vv[kk],inCircle[k].v);
+					if(ct) return ct;
+				}
+			}
+		}
+		*/
+		for(var k in wordl){
+			var xl=wordl[k].border[0]; //x_left
+			var yt=wordl[k].border[1]; //x_top
+			cxt.clearRect(xl,yt,wordl[k].border[2],wordl[k].border[3]);
+		}
+		wordlist[i].border[0]+=dx;
+		wordlist[i].border[1]+=dy;
+		wlTwoBox[i].minX+=dx;
+		wlTwoBox[i].minY+=dy;
+		for(var k in wordl){
+			wlTwoBox[i].box[k].border[0]+=dx;
+			wlTwoBox[i].box[k].border[1]+=dy;
+			cxt.putImageData(wlTwoBox[i].box[k].border[4],wlTwoBox[i].box[k].border[0],wlTwoBox[i].box[k].border[1]);
+		}
+	}else{ //当前单词为普通盒子模型
+		/*
+		var x1=wordlist[i].border[0]+dx;
+		var y1=wordlist[i].border[1]+dy;
+		var x2=x1+wordlist[i].border[2];
+		var y2=y1+wordlist[i].border[3];
+		
+		for(var k in inCircle){
+			var j=inCircle[k].i;
+			if(j<twoBoxLen){  //判断圈内的单词类型
+				for(var ii in inCircle[k].v){
+					var ct = collisionDetect([x1,y1,x2,y2],inCircle[k].v[ii]);//ct:collision type
+					if(ct) return ct;
+				}
+			}else{
+				var ct = collisionDetect([x1,y1,x2,y2],inCircle[k].v);
+				if(ct) return ct;
+			}
+		}
+		*/
+		cxt.clearRect(wordlist[i].border[0],wordlist[i].border[1],wordlist[i].border[2],wordlist[i].border[3]);
+		wordlist[i].border[0]+=dx;
+		wordlist[i].border[1]+=dy;
+		cxt.putImageData(wordlist[i].border[4],wordlist[i].border[0],wordlist[i].border[1]);
+	}
+	return 0;
+}
+
 function showWord(i){
 	cxt.putImageData(imgData,0,0);
 	cxt.strokeStyle="red";
@@ -1317,6 +1455,66 @@ function getTowLevelBorder(){
 		});
 	}
 	//alert("wo skadhask")
+}
+
+function getTowLevelBorder2(i){
+	var letterTotalBorder=[];//每个单词所有字母的边界
+	var border=wordlist[i].border;
+	//alert(border+":size:"+wordlist[0].size);
+	var word=wordlist[i].word;
+	//alert(word.length+":"+word[0]);
+	//var size=wordlist[i].size;
+
+	cxt.textBaseline = 'top';
+	cxt.textAlign='start';
+	cxt.font = wordlist[i].size.toString()+"px "+wordlist[i].font;
+	var x=border[0];
+	var y=border[1];
+	var dw=border[2];
+	//cxt.fillText(word[0],x,y);
+	//var wordw=Math.floor(cxt.measureText(word[0]).width);
+	var wordh=border[3];
+	//cxt.strokeRect(x,y,wordw,wordh);
+	//var letterBorder=getBorder2(x,y,wordw,wordh);
+	//cxt.strokeRect(letterBorder[0],letterBorder[1],letterBorder[2],letterBorder[3]);
+	var minH=wordh;
+	var minY=y;
+	for(var j in word){
+		//alert(word[i]);
+		if(word[j]==' '){
+			continue;
+		}
+		cxt.fillText(word[j],0,0);
+		var wordw=Math.floor((cxt.measureText(word[j]).width)); //注意，像素一定要是整数，要不然会出错
+		var lettersize=getBorder(0,0,wordw,Math.floor(wordh*1.5));
+		cxt.clearRect(0,0,wordw,wordh*2);
+		wordw=lettersize[2];
+		//var wordh=border[3];
+
+		var letterBorder=getBorder(x,y,wordw+1,wordh);
+		
+		//cxt.strokeRect(letterBorder[0],letterBorder[1],letterBorder[2],letterBorder[3]);
+		//x+=letterBorder[0]+1;
+		x=letterBorder[0]+letterBorder[2]+1;
+		x=getBorder(x,y,dw-letterBorder[2],wordh)[0];
+		if(j==(word.length-1)){
+			letterBorder[2]=border[2]-(letterBorder[0]-border[0]);
+		}
+		letterTotalBorder.push({
+			letter:word[j],
+			border:letterBorder
+		});
+		if(minH>letterBorder[3]){
+			minH=letterBorder[3];
+			minY=letterBorder[1];
+		}
+		
+	}
+	wlTwoBox[i].box=letterTotalBorder;
+	wlTwoBox[i].minX=border[0];
+	wlTwoBox[i].minY=minY;
+	wlTwoBox[i].minW=border[2];
+	wlTwoBox[i].minH=minH;
 }
 
 /*
@@ -1578,7 +1776,7 @@ function changeWordColor(color,i){
 		wordlist[i].border[1] = newWBorder[1];
 		//wordlist[i].border[2] = newWBorder[2];
 		//wordlist[i].border[3] = newWBorder[3];
-		getTowLevelBorder();
+		getTowLevelBorder2(i);
 		var dx=wx-newWBorder[0];
 		var dy=wy-newWBorder[1];
 		
@@ -1597,7 +1795,8 @@ function changeWordColor(color,i){
 		
 	}
 	cxt.clearRect(0,450,wordw,Math.floor(wordlist[i].border[3]*1.5));
-	imgData=cxt.getImageData(0,0,cw,ch);
+	//imgData=cxt.getImageData(0,0,cw,ch);
+	fresh();
 	editSave();
 	showWord(i);
 }
@@ -1630,7 +1829,7 @@ function changeWordFont(fontType,i){
 		
 		wordlist[i].border[0] = newWBorder[0];
 		wordlist[i].border[1] = newWBorder[1];
-		getTowLevelBorder();
+		getTowLevelBorder2(i);
 		var dx=wx-newWBorder[0];
 		var dy=wy-newWBorder[1];
 		
@@ -1649,9 +1848,9 @@ function changeWordFont(fontType,i){
 		cxt.putImageData(newWBorder[4],wordlist[i].border[0],wordlist[i].border[1]);
 		
 	}
-	
 	cxt.clearRect(0,450,wordw,wordlist[i].border[3]*2);
-	imgData=cxt.getImageData(0,0,cw,ch);
+	//imgData=cxt.getImageData(0,0,cw,ch);
+	fresh();
 	editSave();
 	//compact();
 	showWord(i);
@@ -1834,6 +2033,9 @@ function deepClone(d,s,type){ //1:wordlist  0:wlTwoBox   深复制（深拷贝�
 }
 
 function WordsList(){
+	list.sort(function(x,y){
+		return y[1]-x[1];
+	});
 	var str="Words List\nword : frequency\n";
 	/*
 	var sum=0;
@@ -1853,71 +2055,26 @@ function WordsList(){
 	alert(str);
 }
 
-function test(){
-	setTimeout(function (){
-		//alert(twoBoxLen)
-		moveWord(0,50,10);
-		imgData=cxt.getImageData(0,0,cw,ch);
-		//alert(EucDist(1,0.99,4,5));
-		/*
-		var dd={i:1,j:2};
-		var xx="xiongkai";
-		var tt=[];
-		tt.push({
-			dd:dd,
-			xx:xx
-		});
-		alert(tt[0].dd.i+"\n"+tt[0].xx);
-		var ww={i:5,j:6};
-		dd={i:5,j:6};
-		xx="xxl";
-		tt.push({
-			dd:dd,
-			xx:xx
-		});
-		for(var i in tt){
-			alert(tt[i].dd.i+"\n"+tt[i].xx);
-		}
-		*/
-		/*
-		var obj = [0,1];
-		var obj2 = obj;
-		
-		function test(b){
-		　　b[0] = 2;
-			b.push(3);
-		}
-		test(obj2);
-		alert(obj+":"+obj2);
-		*/
-		/*
-		var ww=[];
-		for(var i=0;i<3;i++){
-			for(var j=0;j<3;j++){
-				for(var z=0;z<3;z++){
-					if(ww.indexOf(z)==-1){
-						ww.push(z);
-					}
-				}
-			}
-		}
-		alert(ww);
-		
-		var ww="hello world";
-		//if(' ' in ww){
-		if(ww.search(' ')>0){
-			alert(ww.search(' ')+"yes");
-		}else{
-			alert(ww.search(' ')+"no")
-		}
-		
-		var ww=[1,2,3,4,5];
-		alert(ww);
-		for(var i in ww){
-			ww[i]++;
-		}
-		alert(ww);
-		*/
-		
-	},0)
+function download(type) {
+    //设置保存图片的类型
+    var imgdata = canvas.toDataURL(type);
+    //将mime-type改为image/octet-stream,强制让浏览器下载
+    var fixtype = function (type) {
+        type = type.toLocaleLowerCase().replace(/jpg/i, 'jpeg');
+        var r = type.match(/png|jpeg|bmp|gif/)[0];
+        return 'image/' + r;
+    }
+    imgdata = imgdata.replace(fixtype(type), 'image/octet-stream')
+    //将图片保存到本地
+    var saveFile = function (data, filename) {
+        var link = document.createElement('a');
+        link.href = data;
+        link.download = filename;
+        var event = document.createEvent('MouseEvents');
+        event.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+        link.dispatchEvent(event);
+    }
+    var timestamp=new Date().getTime(); //new Date().toLocaleDateString();
+    var filename = timestamp + '.' + type;
+    saveFile(imgdata, filename);
 }
