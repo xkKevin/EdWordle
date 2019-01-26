@@ -60,6 +60,80 @@ function changeWL(){
 	changeLayout();
 }
 
+function changeWLBP(wl){ //change wordlist by person
+    list.length=0;
+    for(var i in wl){
+        list.push(wl[i]);
+    }
+    //cwl=(cwl+1)%wlist.length;
+    min = list[0][1]; //最低词频
+    max = 0;          //最高词频
+    len = list.length;
+    twoBoxLen = Math.floor(len/2);
+    //var twoBoxLen=len
+    for (var i = 0; i < len; i++) {
+        if (min > list[i][1]) {
+            min = list[i][1];
+        }
+        if (max < list[i][1]) {
+            max = list[i][1];
+        }
+    }
+    changeLayout();
+}
+
+function showWLinModal(){
+    var str="";
+    for(var i=0;i<list.length;i++){
+        str+=list[i][0]+" "+list[i][1];
+        str+="\n";
+    }
+    document.getElementById("modal_body").innerHTML = str;
+}
+
+function clearWL() {
+    document.getElementById("modal_body").innerHTML="";
+    //alert(document.getElementById("modal_body").innerText)
+}
+
+function inputWL(){
+    var rowdata = $('#modal_body').val();
+    //alert(rowdata);
+    var wl=[];
+    //var rowdata = "Xiong 32\nKai 44";
+    var str = /[a-z]/i;
+    var num = /[0-9]/;
+    for(var i=0;i<rowdata.length;i++){
+        var word="";
+        var frequency="";
+        var freq = 0;
+        while(str.test(rowdata[i])){
+            word+=rowdata[i];
+            i++;
+        }
+        while(/\W/.test(rowdata[i])){
+            i++;
+        }
+        while(num.test(rowdata[i])){
+            frequency+=rowdata[i];
+            i++;
+        }
+        var freq = parseInt(frequency);
+        if(word==""||freq<=0||isNaN(freq)){
+        	alert("Invalid Input!");
+            return 0;
+        }else{
+            //wl[word]=freq;
+            wl.push([word,freq]);
+        }
+    }
+    if(wl.length<=0){
+        alert("Empty Input!");
+    }else{
+        changeWLBP(wl);
+    }
+}
+
 cv.onmousedown = function(e){
 	var ev = window.event || e;
 	var mx = ev.layerX || ev.offsetX;
@@ -338,8 +412,9 @@ cv.onmousedown = function(e){
 			var y2=y1+wordlist[i].border[3];
 			if(mx>=x1&&mx<=x2&&my>=y1&&my<=y2){
 				//alert(i);
-				document.getElementById("word").innerHTML=list[i][0]+" : "+list[i][1];
-				document.getElementById("font").style.display="inline"; //inline内联元素，不会换行；block块级标签，换行
+				//document.getElementById("word").innerHTML=list[i][0]+" : "+list[i][1];
+                document.getElementById("word").innerHTML=wordlist[i].word+" : "+wordlist[i].freq;
+                document.getElementById("font").style.display="inline"; //inline内联元素，不会换行；block块级标签，换行
 				document.getElementById("color").value=wordlist[i].color;
 				showWord(i);
 				document.getElementById("color").onchange = function(){
